@@ -40,6 +40,14 @@ def get_reviews(city, business_id=None, user_id=None, n=10):
     return random.sample(reviews, min(n, len(reviews)))
 
 
+def get_user(username):
+    for city, users in USERS.items():
+        for user in users:
+            if user["name"] == username:
+                return user
+    raise IndexError(f"invalid username {username}")
+
+
 CITIES = load_cities()
 USERS = load(CITIES, "user")
 BUSINESSES = load(CITIES, "business")
