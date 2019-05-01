@@ -15,7 +15,12 @@ Session(app)
 
 @app.route("/")
 def index():
-    return render_template("index.html", user=session.get("user"))
+    user = session.get("user")
+    user_id = user["user_id"] if user else None
+
+    recommendations = deepcopy(recommend(user_id=user_id, n=10))
+
+    return render_template("index.html", recommendations=recommendations, user=session.get("user"))
 
 
 @app.route("/login", methods=["POST"])
@@ -36,6 +41,9 @@ def logout():
 
 @app.route("/business/<city>/<id>")
 def business(city, id):
+    user = session.get("user")
+    user_id = user["user_id"] if user else None
+
     business = deepcopy(data.get_business(city.lower(), id))
     business["stars"] = int(float(business["stars"]) * 2)
 
@@ -43,7 +51,7 @@ def business(city, id):
     for review in reviews:
         review["stars"] = int(float(review["stars"]) * 2)
 
-    recommendations = deepcopy(recommend(business_id=id, n=10))
+    recommendations = deepcopy(recommend(user_id=user_id, business_id=id, n=10))
     for recommendation in recommendations:
         assert "business_id" in recommendation
         assert "stars" in recommendation
@@ -52,7 +60,7 @@ def business(city, id):
         assert "city" in recommendation
         assert "address" in recommendation
 
-    return render_template("business.html", business=business, recommendations=recommendations, reviews=reviews, user=session.get("user"))
+    return render_template("business.html", business=business, recommendations=recommendations, reviews=reviews, user=user)
 
 @app.route("/static/<path:path>")
 def send_static(path):
