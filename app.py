@@ -51,7 +51,7 @@ def business(city, id):
     for review in reviews:
         review["stars"] = int(float(review["stars"]) * 2)
 
-    recommendations = deepcopy(recommend(user_id=user_id, business_id=id, n=10))
+    recommendations = deepcopy(recommend(user_id=user_id, business_id=id, city=business["city"].lower(), n=10))
     for recommendation in recommendations:
         assert "business_id" in recommendation
         assert "stars" in recommendation
