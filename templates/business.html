@@ -73,7 +73,7 @@
             <div class="card h-100">
               <div class="card-body">
                 <h4 class="card-title">
-                  <a href="{{ '/business/' + recommendation['city'] + '/' + recommendation['business_id'] }}">{{ recommendation["name"] }}</a>
+                  <a href="{{ url_for('business', city=recommendation['city'], id=recommendation['business_id']) }}">{{ recommendation["name"] }}</a>
                 </h4>
                 <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet numquam aspernatur!</p>
                 <p class="card-text">{{ recommendation["city"] }} {{ recommendation["address"] }}<p>
