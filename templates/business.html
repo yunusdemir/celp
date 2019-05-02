@@ -36,12 +36,9 @@
             </div>
             <div class="card-footer">
               <small class="text-muted">
-              {% for star in range(business["stars"]) %}
-              &#9733;
-              {% endfor %}
-              {% for star in range(10 - business["stars"]) %}
-              &#9734;
-              {% endfor %}
+                {% with stars=business["stars"] %}
+                  {% include 'stars.html' %}
+                {% endwith %}
               </small>
             </div>
           </div>
@@ -58,12 +55,9 @@
             </div>
             <div class="card-footer">
               <small class="text-muted">
-              {% for star in range(review["stars"]) %}
-              &#9733;
-              {% endfor %}
-              {% for star in range(10 - review["stars"]) %}
-              &#9734;
-              {% endfor %}
+                {% with stars=review["stars"] %}
+                  {% include 'stars.html' %}
+                {% endwith %}
               </small>
             </div>
           </div>
@@ -86,12 +80,9 @@
               </div>
               <div class="card-footer">
                 <small class="text-muted">
-                {% for star in range(recommendation["stars"]) %}
-                &#9733;
-                {% endfor %}
-                {% for star in range(10 - recommendation["stars"]) %}
-                &#9734;
-                {% endfor %}
+                  {% with stars=recommendation["stars"] %}
+                    {% include 'stars.html' %}
+                  {% endwith %}
                 </small>
               </div>
             </div>
