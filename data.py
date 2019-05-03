@@ -1,3 +1,12 @@
+"""
+This file loads the data from the data directory and shows you how.
+Feel free to change the contents of this file!
+Do ensure these functions remain functional:
+    - get_business(city, business_id)
+    - get_reviews(city, business_id=None, user_id=None, n=10)
+    - get_user(username)
+"""
+
 import os
 import json
 import random
@@ -6,10 +15,24 @@ DATA_DIR = "data"
 
 
 def load_cities():
+    """
+    Finds all cities (all directory names) in ./data
+    Returns a list of city names
+    """
     return os.listdir(DATA_DIR)
 
 
 def load(cities, data_filename):
+    """
+    Given a list of city names,
+        for each city extract all data from ./data/<city>/<data_filename>.json
+    Returns a dictionary of the form:
+        {
+            <city1>: [<entry1>, <entry2>, ...],
+            <city2>: [<entry1>, <entry2>, ...],
+            ...
+        }
+    """
     data = {}
     for city in cities:
         city_data = []
@@ -21,6 +44,9 @@ def load(cities, data_filename):
 
 
 def get_business(city, business_id):
+    """
+    
+    """
     for business in BUSINESSES[city]:
         if business["business_id"] == business_id:
             return business
