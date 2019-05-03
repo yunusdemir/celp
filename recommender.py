@@ -15,5 +15,6 @@ def recommend(user_id=None, business_id=None, city=None, n=10):
             adress:str
         }
     """
-    city = city if city else random.choice(CITIES) 
+    if not city:
+        city = random.choice(CITIES)
     return random.sample(BUSINESSES[city], n)
