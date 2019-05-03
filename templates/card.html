@@ -1,6 +1,6 @@
 <div class="card h-100">
   {% if 'img' in card %}
-    <a href="#"><img class="card-img-top" src="{{ card['img'] }}" alt=""></a>
+    <a href={{card['link'] if 'link' in card else '#'}}><img class="card-img-top" src="{{ card['img'] }}" alt=""></a>
   {% endif %}
   <div class="card-body">
     {% if 'name' in card %}
