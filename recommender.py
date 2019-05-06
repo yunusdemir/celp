@@ -2,6 +2,7 @@ from data import CITIES, BUSINESSES, USERS, REVIEWS, TIPS, CHECKINS
 
 import random
 
+
 def recommend(user_id=None, business_id=None, city=None, n=10):
     """
     Returns n recommendations as a list of dicts.
