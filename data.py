@@ -45,7 +45,14 @@ def load(cities, data_filename):
 
 def get_business(city, business_id):
     """
-    
+    Given a city name and a business id, return that business's data.
+    Returns a dictionary of the form:
+        {
+            name:str,
+            business_id:str,
+            stars:str,
+            ...
+        }
     """
     for business in BUSINESSES[city]:
         if business["business_id"] == business_id:
@@ -54,6 +61,16 @@ def get_business(city, business_id):
 
 
 def get_reviews(city, business_id=None, user_id=None, n=10):
+    """
+    Given a city name and optionally a business id and/or auser id,
+    return n reviews for that business/user combo in that city.
+    Returns a dictionary of the form:
+        {
+            text:str,
+            stars:str,
+            ...
+        }
+    """
     def should_keep(review):
         if business_id and review["business_id"] != business_id:
             return False
@@ -67,6 +84,15 @@ def get_reviews(city, business_id=None, user_id=None, n=10):
 
 
 def get_user(username):
+    """
+    Get a user by its username
+    Returns a dictionary of the form:
+        {
+            user_id:str,
+            name:str,
+            ...
+        }
+    """
     for city, users in USERS.items():
         for user in users:
             if user["name"] == username:
