@@ -1,3 +1,7 @@
+#Remove Data content, because it is almost 5GB
+data/*
+
+
 *.DS_store
 __pycache__
 __pycache__/*
