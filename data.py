@@ -35,6 +35,9 @@ def load(cities, data_filename):
     """
     data = {}
     for city in cities:
+        if city.startswith("."):
+            continue
+
         city_data = []
         with open(f"{DATA_DIR}/{city}/{data_filename}.json", "r") as f:
             for line in f:
