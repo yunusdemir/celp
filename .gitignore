@@ -1,5 +1,6 @@
 #Remove Data content, because it is almost 5GB
 data/*
+.vscode/*
 
 
 *.DS_store
