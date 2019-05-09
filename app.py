@@ -15,16 +15,19 @@ Session(app)
 
 @app.route("/")
 def index():
-    """Landing page, shows 10 recommendations."""
+    """Landing page, shows 20 recommendations."""
     # Get current user if logged in
     user = session.get("user")
     user_id = user["user_id"] if user else None
 
-    # Get 10 recommendations
+    # Get recommendations for in carousel
     recommendations = recommender.recommend(user_id=user_id, n=10)
 
+    # Get recommendations for in cards
+    cards = recommender.recommend(user_id=user_id, n=6)
+
     # Render
-    return render_template("index.html", recommendations=recommendations, user=session.get("user"))
+    return render_template("index.html", recommendations=recommendations, cards=cards, user=session.get("user"))
 
 
 @app.route("/login", methods=["POST"])

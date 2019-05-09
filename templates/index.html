@@ -34,7 +34,7 @@
             <li data-target="#carouselExampleIndicators" data-slide-to="3"></li>
           </ol>
           <div class="carousel-inner" role="listbox">
-            {% for i in range(4) %}
+            {% for i in range(recommendations|length) %}
             <div class="carousel-item {% if i == 0 %}active{% endif %}">
               <div class="col-lg-8 offset-md-2">
                 {% with card={
@@ -61,15 +61,20 @@
         </div>
 
         <!-- Cards (remaining recommendations) -->
+        {% if user %}
+          <h1>Users like you also like...</h1>
+        {% else %}
+          <h1>Other users like...</h1>
+        {% endif %}
         <div class="row">
-          {% for i in range(4, recommendations|length) %}
+          {% for i in range(cards|length) %}
             <div class="col-lg-4 col-md-6 mb-4">
               {% with card={
-                  'name':recommendations[i]["name"],
-                  'link':url_for('business', city=recommendations[i]['city'], id=recommendations[i]['business_id']),
+                  'name':cards[i]["name"],
+                  'link':url_for('business', city=cards[i]['city'], id=cards[i]['business_id']),
                   'img':'http://placehold.it/700x400',
                   'text':'Description here',
-                  'stars':recommendations[i]["stars"]
+                  'stars':cards[i]["stars"]
               } %}
                 {% include 'card.html' %}
               {% endwith %}
