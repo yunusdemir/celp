@@ -1,2 +1,4 @@
-Flask==1.0.2
 Flask_Session==0.3.1
+Flask==1.0.2
+numpy==1.16.3
+pandas==0.24.2
