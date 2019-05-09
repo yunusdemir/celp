@@ -10,6 +10,8 @@ Do ensure these functions remain functional:
 import os
 import json
 import random
+import pandas as import pd
+import numpy as np
 
 DATA_DIR = "data"
 
