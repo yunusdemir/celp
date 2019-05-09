@@ -7,122 +7,122 @@ Do ensure these functions remain functional:
     - get_user(username)
 """
 
-import os
 import json
+import os
 import random
+from typing import List
 
-DATA_DIR = "data"
-
-
-def load_cities():
-    """
-    Finds all cities (all directory names) in ./data
-    Returns a list of city names
-    """
-
-    return [city for city in os.listdir(DATA_DIR) if city.startswith(".") is False]
+import pandas as pd
 
 
-def load(cities, data_filename):
-    """
-    Given a list of city names,
-        for each city extract all data from ./data/<city>/<data_filename>.json
-    Returns a dictionary of the form:
-        {
-            <city1>: [<entry1>, <entry2>, ...],
-            <city2>: [<entry1>, <entry2>, ...],
-            ...
-        }
-    """
-    data = {}
-    for city in cities:
-        city_data = []
-        with open(f"{DATA_DIR}/{city}/{data_filename}.json", "r") as f:
-            for line in f:
-                city_data.append(json.loads(line))
-        data[city] = city_data
-    return data
+class Data:
 
+    def __init__(self, data_directory="data"):
 
-def get_business(city, business_id):
-    """
-    Given a city name and a business id, return that business's data.
-    Returns a dictionary of the form:
-        {
-            name:str,
-            business_id:str,
-            stars:str,
-            ...
-        }
-    """
-    for business in BUSINESSES[city]:
-        if business["business_id"] == business_id:
-            return business
-    raise IndexError(f"invalid business_id {business_id}")
+        self.data_directory = data_directory
 
+        self.CITIES: List[str] = self.load_cities()
+        self.USERS = self.load(self.CITIES, "user")
+        self.BUSINESSES = self.load(self.CITIES, "business")
+        self.REVIEWS = self.load(self.CITIES, "review")
+        self.TIPS = self.load(self.CITIES, "tip")
+        self.CHECKINS = self.load(self.CITIES, "checkin")
 
-def get_reviews(city, business_id=None, user_id=None, n=10):
-    """
-    Given a city name and optionally a business id and/or auser id,
-    return n reviews for that business/user combo in that city.
-    Returns a dictionary of the form:
-        {
-            text:str,
-            stars:str,
-            ...
-        }
-    """
-    def should_keep(review):
-        if business_id and review["business_id"] != business_id:
-            return False
-        if user_id and review["user_id"] != user_id:
-            return False
-        return True
+    def load_cities(self):
+        """
+        Finds all cities (all directory names) in ./data
+        Returns a list of city names
+        """
 
-    reviews = REVIEWS[city]
-    reviews = [review for review in reviews if should_keep(review)]
-    return random.sample(reviews, min(n, len(reviews)))
+        return [city for city in os.listdir(self.data_directory) if city.startswith(".") is False]
 
+    def load(self, cities, data_filename):
+        """
+        Given a list of city names,
+            for each city extract all data from ./data/<city>/<data_filename>.json
+        Returns a dictionary of the form:
+            {
+                <city1>: [<entry1>, <entry2>, ...],
+                <city2>: [<entry1>, <entry2>, ...],
+                ...
+            }
+        """
+        data = {}
+        for city in cities:
+            city_data = []
+            with open(f"{self.data_directory}/{city}/{data_filename}.json", "r") as f:
+                for line in f:
+                    city_data.append(json.loads(line))
+            data[city] = city_data
+        return data
 
-def get_user(username):
-    """
-    Get a user by its username
-    Returns a dictionary of the form:
-        {
-            user_id:str,
-            name:str,
-            ...
-        }
-    """
-    for city, users in USERS.items():
-        for user in users:
-            if user["name"] == username:
-                return user
-    raise IndexError(f"invalid username {username}")
+    def get_business(self, city, business_id):
+        """
+        Given a city name and a business id, return that business's data.
+        Returns a dictionary of the form:
+            {
+                name:str,
+                business_id:str,
+                stars:str,
+                ...
+            }
+        """
+        for business in self.BUSINESSES[city]:
+            if business["business_id"] == business_id:
+                return business
+        raise IndexError(f"invalid business_id {business_id}")
 
+    def get_reviews(self, city, business_id=None, user_id=None, n=10):
+        """
+        Given a city name and optionally a business id and/or user id,
+        return n reviews for that business/user combo in that city.
+        Returns a dictionary of the form:
+            {
+                text:str,
+                stars:str,
+                ...
+            }
+        """
 
-CITIES = load_cities()
-USERS = load(CITIES, "user")
-BUSINESSES = load(CITIES, "business")
-REVIEWS = load(CITIES, "review")
-TIPS = load(CITIES, "tip")
-CHECKINS = load(CITIES, "checkin")
+        def should_keep(review):
+            if business_id and review["business_id"] != business_id:
+                return False
+            if user_id and review["user_id"] != user_id:
+                return False
+            return True
 
-def to_dataframe(data, columns):
-    """
-    Converts a given json file into a DataFrame,
-    Only converts given columns
-    """
-    df_dict = {}
-    for city in CITIES:
-        # create empty DataFrame with right columns for every city
-        df_dict[city] = pd.DataFrame(columns=columns)
-        for dict in data[city]:
-            # filter json-data on given columns and append filtered dict to DataFrame
-            filtered_dict = {wanted : dict[wanted] for wanted in columns}
-            df_dict[city] = df_dict[city].append(filtered_dict, ignore_index=True)
+        reviews = self.REVIEWS[city]
+        reviews = [review for review in reviews if should_keep(review)]
+        return random.sample(reviews, min(n, len(reviews)))
 
-    return df_dict
+    def get_user(self, username):
+        """
+        Get a user by its username
+        Returns a dictionary of the form:
+            {
+                user_id:str,
+                name:str,
+                ...
+            }
+        """
+        for city, users in self.USERS.items():
+            for user in users:
+                if user["name"] == username:
+                    return user
+        raise IndexError(f"invalid username {username}")
 
-# test
-print(to_dataframe(USERS, ['user_id', 'name']))
+    def dict_to_dataframe(self, data, columns):
+        """
+        Converts a given json file into a DataFrame,
+        Only converts given columns
+        """
+        df_dict = {}
+        for city in self.CITIES:
+            # create empty DataFrame with right columns for every city
+            df_dict[city] = pd.DataFrame(columns=columns)
+            for data_dict in data[city]:
+                # filter json-data on given columns and append filtered dict to DataFrame
+                filtered_dict = {wanted: data_dict[wanted] for wanted in columns}
+                df_dict[city] = df_dict[city].append(filtered_dict, ignore_index=True)
+
+        return df_dict
