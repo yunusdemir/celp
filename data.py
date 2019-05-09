@@ -106,3 +106,22 @@ BUSINESSES = load(CITIES, "business")
 REVIEWS = load(CITIES, "review")
 TIPS = load(CITIES, "tip")
 CHECKINS = load(CITIES, "checkin")
+
+def to_dataframe(data, columns):
+    """
+    Converts a given json file into a DataFrame,
+    Only converts given columns
+    """
+    df_dict = {}
+    for city in CITIES:
+        # create empty DataFrame with right columns for every city
+        df_dict[city] = pd.DataFrame(columns=columns)
+        for dict in data[city]:
+            # filter json-data on given columns and append filtered dict to DataFrame
+            filtered_dict = {wanted : dict[wanted] for wanted in columns}
+            df_dict[city] = df_dict[city].append(filtered_dict, ignore_index=True)
+
+    return df_dict
+
+# test
+print(to_dataframe(USERS, ['user_id', 'name']))
