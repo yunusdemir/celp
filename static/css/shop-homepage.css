@@ -5,6 +5,7 @@
  */
 body {
   padding-top: 56px;
+  font-family: 'Georgia'
 }
 
 .product_container {
@@ -30,4 +31,8 @@ body {
   content: '<';
   font-size: 55px;
   color: black;
+}
+
+h1 {
+  font-size: 30px;
 }
