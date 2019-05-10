@@ -1,9 +1,10 @@
-import data
-import recommender
-
 from tempfile import mkdtemp
+
 from flask import Flask, render_template, redirect, request, session, flash
 from flask_session import Session
+
+from data import Data
+from recommender import Recommender
 
 app = Flask(__name__)
 
@@ -11,6 +12,9 @@ app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
+
+data = Data()
+recommender = Recommender()
 
 
 @app.route("/")
@@ -21,13 +25,14 @@ def index():
     user_id = user["user_id"] if user else None
 
     # Get recommendations for in carousel
-    recommendations = recommender.recommend(user_id=user_id, n=10)
+    recommendations = recommender.recommend()
 
     # Get recommendations for in cards
     cards = recommender.recommend(user_id=user_id, n=6)
 
     # Render
-    return render_template("index.html", recommendations=recommendations, cards=cards, user=session.get("user"))
+    return render_template("index.html", recommendations=recommendations, cards=cards,
+                           user=session.get("user"))
 
 
 @app.route("/login", methods=["POST"])
@@ -79,7 +84,7 @@ def business(city, id):
 @app.route("/static/<path:path>")
 def send_static(path):
     """Route to serve anything from the static dir."""
-    return send_from_directory("static", path)
+    return send_static("static", path)
 
 
 if __name__ == "__main__":
