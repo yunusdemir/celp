@@ -111,18 +111,26 @@ class Data:
                     return user
         raise IndexError(f"invalid username {username}")
 
-    def dict_to_dataframe(self, data, columns):
+    def dict_to_dataframe(self, data: dict, columns: list = None, cities: list = None):
         """
         Converts a given json file into a DataFrame,
-        Only converts given columns
+        Only converts given columns if columns are given else convert all
         """
+
         df_dict = {}
-        for city in self.CITIES:
+        cities = self.CITIES if cities is None else cities
+        columns = data[cities[0]][0].keys() if columns is None else columns
+
+        for city in cities:
             # create empty DataFrame with right columns for every city
             df_dict[city] = pd.DataFrame(columns=columns)
+
             for data_dict in data[city]:
                 # filter json-data on given columns and append filtered dict to DataFrame
                 filtered_dict = {wanted: data_dict[wanted] for wanted in columns}
                 df_dict[city] = df_dict[city].append(filtered_dict, ignore_index=True)
 
         return df_dict
+
+
+Data().dict_to_dataframe(Data().USERS)
