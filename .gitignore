@@ -1,7 +1,9 @@
-#Remove Data content, because it is almost 5GB
+# Remove Data content, because it is almost 5GB
 data/*
 .vscode/*
 
+# Remove pytest file
+pytest.ini
 
 *.DS_store
 __pycache__
