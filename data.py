@@ -18,7 +18,10 @@ import pandas as pd
 class Data:
 
     def __init__(self, data_directory="data"):
-
+        """
+        Initializes class
+        :param data_directory: the folder with the folders with the json files
+        """
         self.data_directory = data_directory
 
         self.CITIES: List[str] = self.load_cities()
@@ -31,12 +34,13 @@ class Data:
     def load_cities(self):
         """
         Finds all cities (all directory names) in ./data
-        Returns a list of city names
+
+        :return: a list of city names
         """
 
         return [city for city in os.listdir(self.data_directory) if city.startswith(".") is False]
 
-    def load(self, cities, data_filename):
+    def load(self, cities: list, data_filename: str):
         """
         Given a list of city names,
             for each city extract all data from ./data/<city>/<data_filename>.json
@@ -46,6 +50,10 @@ class Data:
                 <city2>: [<entry1>, <entry2>, ...],
                 ...
             }
+
+        :param cities: list of city names
+        :param data_filename: string with name of datafile
+        :return: dict of cities with data
         """
         data = {}
         for city in cities:
@@ -66,6 +74,9 @@ class Data:
                 stars:str,
                 ...
             }
+        :param city: string of city name
+        :param business_id: string with business id
+        :return: dict with data from the json files
         """
         for business in self.BUSINESSES[city]:
             if business["business_id"] == business_id:
@@ -82,8 +93,12 @@ class Data:
                 stars:str,
                 ...
             }
+        :param city:
+        :param business_id:
+        :param user_id:
+        :param n: amount of reviews
+        :return: dict with review data
         """
-
         def should_keep(review):
             if business_id and review["business_id"] != business_id:
                 return False
@@ -104,6 +119,8 @@ class Data:
                 name:str,
                 ...
             }
+        :param username:
+        :return: a dict with user data
         """
         for city, users in self.USERS.items():
             for user in users:
@@ -111,10 +128,15 @@ class Data:
                     return user
         raise IndexError(f"invalid username {username}")
 
-    def dict_to_dataframe(self, data: dict, columns: list = None, cities: list = None):
+    def dict_to_dataframe(self, data: dict, columns: list = None, cities: list = None) -> dict:
         """
         Converts a given json file into a DataFrame,
         Only converts given columns if columns are given else convert all
+
+        :param data:
+        :param columns:
+        :param cities:
+        :return: a dict with cities as keys and the values are pandas DataFrames
         """
 
         df_dict = {}
@@ -131,6 +153,3 @@ class Data:
                 df_dict[city] = df_dict[city].append(filtered_dict, ignore_index=True)
 
         return df_dict
-
-
-Data().dict_to_dataframe(Data().USERS)
