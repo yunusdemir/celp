@@ -3,6 +3,8 @@ import inspect
 import os
 import sys
 
+import pandas as pd
+
 # get absolute path
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parent_dir = os.path.dirname(current_dir)
@@ -46,3 +48,17 @@ def test_get_reviews():
 def test_get_user():
     assert data.get_user("Cara")["user_id"], "NfU0zDaTMEQ4-X9dbQWd9A"
     assert data.get_user("Cara")["useful"], 10719
+
+
+def test_dict_to_dataframe():
+    assert type(data.dict_to_dataframe(data.USERS)), dict
+    assert type(data.dict_to_dataframe(data.USERS)[data.CITIES[0]]), pd.DataFrame
+
+    df_data = data.dict_to_dataframe(data.USERS, ["user_id", "name"])[data.CITIES[0]]
+    assert df_data[df_data.name == "Cara"].user_id.to_string(), "NfU0zDaTMEQ4-X9dbQWd9A"
+
+    test_cities = [city for city in data.CITIES if city.lower() == "faketown"]
+    assert CITIES[0], test_cities[0]
+
+    df_data = data.dict_to_dataframe(data.USERS, cities=test_cities)[test_cities[0]]
+    assert df_data[df_data.name == "Richard"].user_id.to_string(), "zr2ARlz9CnCi3NKKjs12Jw"
