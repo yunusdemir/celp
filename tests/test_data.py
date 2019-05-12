@@ -96,3 +96,11 @@ def test_dict_to_dataframe_specific_city():
 
     df_data = data.dict_to_dataframe(data.USERS, cities=test_cities)[test_cities[0]]
     assert df_data[df_data.name == "Richard"].user_id.to_string(), "zr2ARlz9CnCi3NKKjs12Jw"
+
+
+def test_pivot_stars_outer_dict():
+    assert type(data.pivot_stars(data.CITIES)), dict
+
+
+def test_pivot_start_inner_dataframe():
+    assert type(data.pivot_stars(data.CITIES)[data.CITIES[0]]), pd.DataFrame

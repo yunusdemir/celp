@@ -10,7 +10,6 @@ Do ensure these functions remain functional:
 import json
 import os
 import random
-from typing import List
 
 import pandas as pd
 
@@ -24,14 +23,14 @@ class Data:
         """
         self.data_directory = data_directory
 
-        self.CITIES: List[str] = self.load_cities()
+        self.CITIES: list = self.load_cities()
         self.USERS = self.load(self.CITIES, "user")
         self.BUSINESSES = self.load(self.CITIES, "business")
         self.REVIEWS = self.load(self.CITIES, "review")
         self.TIPS = self.load(self.CITIES, "tip")
         self.CHECKINS = self.load(self.CITIES, "checkin")
 
-    def load_cities(self):
+    def load_cities(self) -> list:
         """
         Finds all cities (all directory names) in ./data
 
@@ -40,7 +39,7 @@ class Data:
 
         return [city for city in os.listdir(self.data_directory) if city.startswith(".") is False]
 
-    def load(self, cities: list, data_filename: str):
+    def load(self, cities: list, data_filename: str) -> dict:
         """
         Given a list of city names,
             for each city extract all data from ./data/<city>/<data_filename>.json
@@ -64,7 +63,7 @@ class Data:
             data[city] = city_data
         return data
 
-    def get_business(self, city, business_id):
+    def get_business(self, city, business_id) -> dict:
         """
         Given a city name and a business id, return that business's data.
         Returns a dictionary of the form:
@@ -83,7 +82,7 @@ class Data:
                 return business
         raise IndexError(f"invalid business_id {business_id}")
 
-    def get_reviews(self, city, business_id=None, user_id=None, n=10):
+    def get_reviews(self, city, business_id=None, user_id=None, n=10) -> dict:
         """
         Given a city name and optionally a business id and/or user id,
         return n reviews for that business/user combo in that city.
@@ -99,6 +98,7 @@ class Data:
         :param n: amount of reviews
         :return: dict with review data
         """
+
         def should_keep(review):
             if business_id and review["business_id"] != business_id:
                 return False
@@ -110,7 +110,7 @@ class Data:
         reviews = [review for review in reviews if should_keep(review)]
         return random.sample(reviews, min(n, len(reviews)))
 
-    def get_user(self, username):
+    def get_user(self, username) -> dict:
         """
         Get a user by its username
         Returns a dictionary of the form:
@@ -139,7 +139,7 @@ class Data:
         :return: a dict with cities as keys and the values are pandas DataFrames
         """
 
-        df_dict = {}
+        df_dict = dict()
         cities = self.CITIES if cities is None else cities
         columns = data[cities[0]][0].keys() if columns is None else columns
 
@@ -151,5 +151,23 @@ class Data:
                 # filter json-data on given columns and append filtered dict to DataFrame
                 filtered_dict = {wanted: data_dict[wanted] for wanted in columns}
                 df_dict[city] = df_dict[city].append(filtered_dict, ignore_index=True)
+
+        return df_dict
+
+    def pivot_stars(self, cities: list = None) -> dict:
+        """
+        Create and return utility matrixes for the stars in the reviews per city
+
+        :param cities: list with cities, if none
+        :return: a dict with cities as keys and the values are utility matrixes of those cities
+        """
+
+        df_dict = dict()
+        cities = self.CITIES if cities is None else cities
+
+        for city in cities:
+            df = self.dict_to_dataframe(self.REVIEWS, columns=["user_id", "business_id", "stars"],
+                                        cities=list().append(city))
+            df_dict[city] = df[city].pivot(values='stars', columns='user_id', index="business_id")
 
         return df_dict
