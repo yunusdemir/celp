@@ -28,11 +28,23 @@ def test_load_cities():
     assert data.load_cities(), CITIES
 
 
-def test_load():
+def test_load_business():
     assert data.load(CITIES, "business")[CITIES[0]][0]["business_id"], "-MsRvdPnuw6QuLn5Vxjruw"
+
+
+def test_load_checkin():
     assert data.load(CITIES, "checkin")[CITIES[0]][0]["business_id"], "-ak1fx5L9cNjUE56as12MA"
+
+
+def test_load_review():
     assert data.load(CITIES, "review")[CITIES[0]][0]["review_id"], "yO9uwcDlzcFBpp6xSq_wOg"
+
+
+def test_load_tip():
     assert data.load(CITIES, "tip")[CITIES[0]][0]["user_id"], "xtwoOTTOuZrXj4GQtsueuA"
+
+
+def test_load_user():
     assert data.load(CITIES, "user")[CITIES[0]][0]["user_id"], "NfU0zDaTMEQ4-X9dbQWd9A"
 
 
@@ -40,12 +52,21 @@ def test_get_business():
     assert data.get_business(CITIES[0], "-MsRvdPnuw6QuLn5Vxjruw")["name"], "Brian's Furniture"
 
 
-def test_get_reviews():
+def test_get_reviews_length():
     assert len(data.get_reviews(CITIES[0], n=1)[0]["review_id"]), len("ZrQ6PqgZZOcaH8pDlil1ww")
+
+
+def test_get_reviews_by_business_id():
     assert data.get_reviews(CITIES[0], business_id="9jgZh0zCchGlMTKMh_ZV2Q", n=1)[0][
         "review_id"], "_8S9VPiyg2nar6IAU7n2xw"
+
+
+def test_get_reviews_by_user_id():
     assert data.get_reviews(CITIES[0], user_id="b4M0dRgS26N4iH8agQ-3Nw", n=1)[0]["review_id"], \
         "nicnl-hHiH7Wcv3XQc6JAQ"
+
+
+def test_get_reviews_by_user_id_and_business_id():
     assert data.get_reviews(CITIES[0], business_id="KR2kRmHnRCaNzOUEGoB25w",
                             user_id="bJ1ir7YZ-e-cigMahFLEIw", n=1)[0]["review_id"], \
         "HzD24-WZ8pzGGOZeN_ktIA"
@@ -56,13 +77,20 @@ def test_get_user():
     assert data.get_user("Cara")["useful"], 10719
 
 
-def test_dict_to_dataframe():
+def test_dict_to_dataframe_outer_dict():
     assert type(data.dict_to_dataframe(data.USERS)), dict
+
+
+def test_dict_to_dataframe_inner_dataframe():
     assert type(data.dict_to_dataframe(data.USERS)[data.CITIES[0]]), pd.DataFrame
 
+
+def test_dict_to_dataframe_specific_columns():
     df_data = data.dict_to_dataframe(data.USERS, ["user_id", "name"])[data.CITIES[0]]
     assert df_data[df_data.name == "Cara"].user_id.to_string(), "NfU0zDaTMEQ4-X9dbQWd9A"
 
+
+def test_dict_to_dataframe_specific_city():
     test_cities = [city for city in data.CITIES if city.lower() == "faketown"]
     assert CITIES[0], test_cities[0]
 
