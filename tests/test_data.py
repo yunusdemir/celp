@@ -15,6 +15,12 @@ from data import Data
 TEST_DATA_DIR = os.path.dirname(os.path.abspath(__file__)) + "/data/"
 CITIES = ["faketown"]
 
+
+def test_data_exists():
+    Data.testing = True
+    assert Data
+
+
 data = Data(TEST_DATA_DIR)
 
 
