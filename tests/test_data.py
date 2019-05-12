@@ -9,6 +9,7 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
 
 from data import Data
+import pandas as pd
 
 TEST_DATA_DIR = os.path.dirname(os.path.abspath(__file__)) + "/data/"
 CITIES = ["faketown"]
@@ -46,3 +47,8 @@ def test_get_reviews():
 def test_get_user():
     assert data.get_user("Cara")["user_id"], "NfU0zDaTMEQ4-X9dbQWd9A"
     assert data.get_user("Cara")["useful"], 10719
+
+
+def test_dict_to_dataframe():
+    assert type(data.dict_to_dataframe(data.REVIEWS)), dict
+    assert type(data.dict_to_dataframe(data.REVIEWS)[data.CITIES[0]]), pd.DataFrame

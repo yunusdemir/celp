@@ -55,6 +55,8 @@ class Data:
         :param data_filename: string with name of datafile
         :return: dict of cities with data
         """
+        print(cities, data_filename)
+
         data = {}
         for city in cities:
             city_data = []
