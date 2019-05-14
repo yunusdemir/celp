@@ -12,6 +12,7 @@ import os
 import random
 
 import pandas as pd
+import sklearn.metrics.pairwise as pw
 
 
 class Data:
@@ -128,46 +129,70 @@ class Data:
                     return user
         raise IndexError(f"invalid username {username}")
 
-    def dict_to_dataframe(self, data: dict, columns: list = None, cities: list = None) -> dict:
+    def func_for_cities(self, func, cities: list = None, **kwargs) -> dict:
+        """
+        Do function for specified or all cities.
+
+        :param func: function to do
+        :param cities:
+        :param kwargs: variables to pass to function
+        :return: dict with city as key and output of inputted function as value
+        """
+        cities_dict = dict()
+        cities = self.CITIES if cities is None else cities
+
+        for city in cities:
+            cities_dict[city] = func(*tuple(value for _, value in kwargs.items()))
+
+        return cities_dict
+
+    def dict_to_dataframe(self, data: dict, columns: list = None) -> pd.DataFrame:
         """
         Converts a given json file into a DataFrame,
         Only converts given columns if columns are given else convert all
 
         :param data:
         :param columns:
-        :param cities:
-        :return: a dict with cities as keys and the values are pandas DataFrames
+        :return: a dataframe made of the dict
         """
 
-        df_dict = dict()
-        cities = self.CITIES if cities is None else cities
-        columns = data[cities[0]][0].keys() if columns is None else columns
+        columns = data[self.CITIES[0]][0].keys() if columns is None else columns
 
-        for city in cities:
-            # create empty DataFrame with right columns for every city
-            df_dict[city] = pd.DataFrame(columns=columns)
+        # create empty DataFrame with right columns for every city
+        df_dict = pd.DataFrame(columns=columns)
 
-            for data_dict in data[city]:
-                # filter json-data on given columns and append filtered dict to DataFrame
-                filtered_dict = {wanted: data_dict[wanted] for wanted in columns}
-                df_dict[city] = df_dict[city].append(filtered_dict, ignore_index=True)
+        for data_dict in data:
+            # filter json-data on given columns and append filtered dict to DataFrame
+            filtered_dict = {wanted: data_dict[wanted] for wanted in columns}
+            df_dict = df_dict.append(filtered_dict, ignore_index=True)
 
         return df_dict
 
-    def pivot_stars(self, cities: list = None) -> dict:
+    def pivot_stars(self, city: str) -> pd.DataFrame:
         """
-        Create and return utility matrixes for the stars in the reviews per city
+        Create and return utility matrix for the stars in the reviews
+        Last review counts, because apparently something made the person update their review.
 
-        :param cities: list with cities, if none
         :return: a dict with cities as keys and the values are utility matrixes of those cities
         """
 
-        df_dict = dict()
-        cities = self.CITIES if cities is None else cities
+        df = self.dict_to_dataframe(self.REVIEWS[city], columns=["user_id", "business_id",
+                                                                 "stars", "date"])
 
-        for city in cities:
-            df = self.dict_to_dataframe(self.REVIEWS, columns=["user_id", "business_id", "stars"],
-                                        cities=list().append(city))
-            df_dict[city] = df[city].pivot(values='stars', columns='user_id', index="business_id")
+        df = df.sort_values("date").drop_duplicates(subset=["user_id", "business_id"],
+                                                    keep="last")
+        return df.pivot(values='stars', columns='user_id', index="business_id")
 
-        return df_dict
+    @staticmethod
+    def similarity_matrix_cosine(utility_matrix: pd.DataFrame) -> pd.DataFrame:
+        """
+        Calculate cosine similarity with sklearn
+
+        :param utility_matrix: DataFrame to create similarity matrix of
+        :return: DataFrame with cosine similarity
+        """
+
+        mc_matrix = utility_matrix - utility_matrix.mean(axis=0)
+
+        return pd.DataFrame(pw.cosine_similarity(mc_matrix.fillna(0)), index=utility_matrix.index,
+                            columns=utility_matrix.index)
