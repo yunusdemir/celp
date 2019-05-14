@@ -73,3 +73,8 @@ def test_get_reviews_by_user_id_and_business_id():
 def test_get_user():
     assert data.get_user("Cara")["user_id"], "NfU0zDaTMEQ4-X9dbQWd9A"
     assert data.get_user("Cara")["useful"], 10719
+
+
+def test_pivot_stars_duplicate_data():
+    df = data.pivot_stars(data.CITIES[0])
+    assert df[df.duplicated()].empty
