@@ -78,3 +78,9 @@ def test_get_user():
 def test_pivot_stars_duplicate_data():
     df = data.pivot_stars(data.CITIES[0])
     assert df[df.duplicated()].empty
+
+
+def test_pivot_stars_newest_review():
+    """Uses a manufactured review, errors with normal dataset"""
+    df = data.pivot_stars(data.CITIES[0])
+    assert df.loc["KR2kRmHnRCaNzOUEGoB25w", "CnEBX4feg_Tlsyk3QlHC7w"], 2.0
