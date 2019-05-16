@@ -27,7 +27,6 @@ class Recommender:
 
         if not city:
             city = random.choice(self.data.CITIES)
-        
 
         if business_id is None:
 
@@ -37,7 +36,7 @@ class Recommender:
 
                 city = random.choice(self.data.CITIES)
                 all_data = self.data.BUSINESSES[city]
-                
+
                 for item in all_data:
                     if item['stars'] >= 4 and item['review_count'] >= 15:
                         best_of_all.append(item)
@@ -88,4 +87,3 @@ class Recommender:
             sim_list = random.sample(sim_list, n)
 
         return sim_list
-
