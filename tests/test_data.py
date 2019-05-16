@@ -3,6 +3,8 @@ import inspect
 import os
 import sys
 
+import pandas as pd
+
 # get absolute path
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parent_dir = os.path.dirname(current_dir)
@@ -93,3 +95,24 @@ def test_extract_categories():
                   'Home & Garden', 'Shopping', 'Furniture Stores'}
 
     assert set(df[df.business_id == "-MsRvdPnuw6QuLn5Vxjruw"].category), categories
+
+
+def test_pivot_categories():
+    df = data.dict_to_dataframe(data.BUSINESSES[CITIES[0]], ["business_id", "categories"])
+    df = data.extract_categories(df)
+    df = data.pivot_categories(df)
+
+    categories = df.loc["-MsRvdPnuw6QuLn5Vxjruw"]
+    correct_categories = '\x87\xa3typ\xa6series\xa5klass\xa6Series\xa4name\xb6' \
+                         '-MsRvdPnuw6QuLn5Vxjruw\xa5index\x86\xa3typ\xa5index\xa5klass\xa5Index' \
+                         '\xa4name\xa8category\xa5dtype\xa6object\xa4data\x98\xb0Furniture ' \
+                         'Stores\xadHome & Garden\xaaHome Decor\xadHome Services\xafInterior ' \
+                         'Design\xaaMattresses\xa4Rugs\xa8Shopping\xa8compress\xc0\xa5dtype' \
+                         '\xa5int64\xa4data\xc7@\x00\x01\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00' \
+                         '\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00' \
+                         '\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00' \
+                         '\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00' \
+                         '\x00\x00\xa8compress\xc0 '
+
+    assert type(categories), pd.Series
+    assert categories[categories != 0].to_msgpack(), correct_categories
