@@ -28,6 +28,7 @@ class Recommender:
         if not city:
             city = random.choice(self.data.CITIES)
 
+    
         if business_id is not None:
             df = self.data.dict_to_dataframe(self.data.BUSINESSES[city], ["business_id", "categories"]) 
             matrix = self.create_similarity_matrix_categories(df)
@@ -55,7 +56,7 @@ class Recommender:
         return pd.DataFrame(m3, index=df_utility_categories.index,
                             columns=df_utility_categories.index)
 
-    def top_similarity(self, df: pd.DataFrame, city, business_id, n: int = 100) -> list:
+    def top_similarity(self, df: pd.DataFrame, city, business_id, n: int = 10) -> list:
 
         matrix = self.create_similarity_matrix_categories(self.data.dict_to_dataframe(self.data.BUSINESSES[city], ["business_id", "categories"]))
 
@@ -67,5 +68,8 @@ class Recommender:
         for item in sim_series.index:
             if sim_series[item] >= 0.25:
                 sim_list.append(item)
+
+        if len(sim_list) > n:
+            sim_list = random.sample(sim_list, n)
 
         return sim_list
