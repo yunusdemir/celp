@@ -13,7 +13,6 @@ import random
 
 import pandas as pd
 import sklearn.metrics.pairwise as pw
-import numpy as np
 
 
 class Data:
@@ -211,7 +210,7 @@ class Data:
         Returns list of friends IDs of given user
         """
         city = self.get_city(user_id)[0]
-        return next((user['elite'] for user in self.USERS[city] if user['user_id'] == user_id), 
+        return next((user['elite'] for user in self.USERS[city] if user['user_id'] == user_id),
                     None).split(", ")
         
     @staticmethod
