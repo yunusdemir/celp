@@ -2,6 +2,8 @@ import inspect
 import os
 import sys
 
+from flask import url_for
+
 # get absolute path
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parent_dir = os.path.dirname(current_dir)
@@ -17,8 +19,8 @@ def test_app_exists():
     app.testing = True
     assert app
 
-# def test_index():
-#     with app.test_request_context():
-#         client = app.test_client()
-#         assert client.get(url_for('index')).status_code == 200
-#
+
+def test_index():
+    with app.test_request_context():
+        client = app.test_client()
+        assert client.get(url_for('index')).status_code, 200
