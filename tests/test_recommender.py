@@ -26,7 +26,6 @@ data = recommender.data
 def test_create_similarity_matrix_categories():
     df = data.dict_to_dataframe(data.BUSINESSES[CITIES[0]], ["business_id", "categories"])
     df_sim = recommender.create_similarity_matrix_categories(df)
-
     test_column = df_sim[df_sim.columns[0]].name
 
     assert df_sim.loc[test_column, test_column], 1.0
