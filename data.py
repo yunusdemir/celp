@@ -210,3 +210,13 @@ class Data:
         new_df.columns = ['business_id', 'category']
 
         return new_df
+
+    @staticmethod
+    def pivot_categories(df_extract_categories: pd.DataFrame) -> pd.DataFrame:
+        """
+
+        :param df_extract_categories: DataFrame with categories from function extract_categories()
+        :return: DataFrame where if business_id has the categorie the value will be 1
+        """
+        return df_extract_categories.pivot_table(index='business_id', columns='category',
+                                                 aggfunc='size', fill_value=0)
