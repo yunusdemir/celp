@@ -84,3 +84,12 @@ def test_pivot_stars_newest_review():
     """Uses a manufactured review, errors with normal dataset"""
     df = data.pivot_stars(data.CITIES[0])
     assert df.loc["KR2kRmHnRCaNzOUEGoB25w", "CnEBX4feg_Tlsyk3QlHC7w"], 2.0
+
+
+def test_extract_categories():
+    df = data.dict_to_dataframe(data.BUSINESSES[CITIES[0]], ["business_id", "categories"])
+    df = data.extract_categories(df)
+    categories = {'Home Decor', 'Rugs', 'Mattresses', 'Interior Design', 'Home Services',
+                  'Home & Garden', 'Shopping', 'Furniture Stores'}
+
+    assert set(df[df.business_id == "-MsRvdPnuw6QuLn5Vxjruw"].category), categories
