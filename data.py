@@ -38,7 +38,7 @@ class Data:
         :return: a list of city names
         """
 
-        return [city for city in os.listdir(self.data_directory) if city.startswith(".") is False]
+        return [city for city in os.listdir(self.data_directory) if not city.startswith(".")]
 
     def load(self, cities: list, data_filename: str) -> dict:
         """
@@ -196,3 +196,17 @@ class Data:
 
         return pd.DataFrame(pw.cosine_similarity(mc_matrix.fillna(0)), index=utility_matrix.index,
                             columns=utility_matrix.index)
+
+    @staticmethod
+    def extract_categories(df: pd.DataFrame) -> pd.DataFrame:
+        """Unpacks categoriess seprated by ', ' into seperate rows in a DataFrame.
+
+        :param df: DataFrame to get categories out of.
+        :return: DataFrame: with different rows as categories
+        """
+
+        new_df = pd.DataFrame(df.categories.str.split(", ").tolist(), index=df.business_id).stack()
+        new_df = new_df.reset_index([0, 'business_id'])
+        new_df.columns = ['business_id', 'category']
+
+        return new_df
