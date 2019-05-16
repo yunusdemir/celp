@@ -1,4 +1,8 @@
 Flask==1.0.2
 pandas==0.24.2
+numpy==1.16.3
 Flask_Session==0.3.1
-scikit_learn==0.21.0
+matplotlib==3.0.3
+scikit_learn==0.21.1
+pytest
+pytest-flask
