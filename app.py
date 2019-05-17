@@ -24,14 +24,11 @@ def index():
     user = session.get("user")
     user_id = user["user_id"] if user else None
 
-    # Get recommendations for in carousel
-    recommendations = recommender.recommend()
-
-    # Get recommendations for in cards
-    cards = recommender.recommend(user_id=user_id, n=6)
+    # Get recommendations
+    recommendations = recommender.recommend(user_id)
 
     # Render
-    return render_template("index.html", recommendations=recommendations, cards=cards,
+    return render_template("index.html", recommendations=recommendations,
                            user=session.get("user"))
 
 
