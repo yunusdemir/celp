@@ -112,6 +112,4 @@ class Recommender:
         sim_matrix = self.create_similarity_matrix_categories(df)
         top_sim = self.top_similarity(sim_matrix, business_id)
 
-        return_list = [self.data.get_business(city, b_id) for b_id in top_sim]
-
-        return return_list
+        return [self.data.get_business(city, b_id) for b_id in top_sim]
