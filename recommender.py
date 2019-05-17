@@ -136,23 +136,24 @@ class Recommender:
                                                  ["business_id", "stars"])
 
         # create similarity matrix with mean centered ratings
-        utility_matrix = Data().pivot_stars(city)
+        utility_matrix = self.data.pivot_stars(city)
         mean_centered_utility_matrix = utility_matrix.sub(utility_matrix.mean())
-        similarity_matrix = Data().similarity_matrix_cosine(mean_centered_utility_matrix)
+        similarity_matrix = self.data.similarity_matrix_cosine(mean_centered_utility_matrix)
 
         # create list of businesses that user hasn't rated yet
         not_rated = [review['business_id'] for review in self.data.REVIEWS[city] if
                      review['user_id'] != user_id]
 
-        for business_id in not_rated:
-            neighbourhood = self.neighbourhood(similarity_matrix, mean_centered_utility_matrix,
+        for index, business_id in enumerate(not_rated):
+            neighbourhood = self.neighbourhood(similarity_matrix, utility_matrix,
                                                user_id, business_id)
             try:
-                df_reviews['predicted rating'] = sum(
-                    mean_centered_utility_matrix[user_id].mul(neighbourhood).dropna()) / sum(
+                df_reviews.at[index, 'predicted rating'] = sum(
+                    utility_matrix[user_id].mul(neighbourhood).dropna()) / sum(
                     neighbourhood.dropna())
-            except IndexError:
-                df_reviews['predicted rating'] = None
+            except ZeroDivisionError:
+                df_reviews.at[index, 'predicted rating'] = np.nan 
+        print(df_reviews)
 
     @staticmethod
     def neighbourhood(similarity_matrix: pd.DataFrame, utility_matrix: pd.DataFrame, user_id: str,
@@ -165,3 +166,6 @@ class Recommender:
 
         return similarity_matrix[new_business][(similarity_matrix[new_business] > 0) & (
             similarity_matrix[new_business].index.isin(visited))]
+
+
+print(Recommender().index_logged_in('NfU0zDaTMEQ4-X9dbQWd9A'))
