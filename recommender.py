@@ -27,8 +27,11 @@ class Recommender:
 
         city = random.choice(self.data.CITIES) if not city else city
 
-        if business_id is None:
+        if not business_id and not user_id:
             return self.index_not_logged_in()
+        
+        elif not business_id and user_id:
+            return self.index_logged_in(user_id)
 
         elif business_id and city:
             return self.business_page(business_id, city)
@@ -115,3 +118,37 @@ class Recommender:
         return_list = [self.data.get_business(city, b_id) for b_id in top_sim]
 
         return return_list
+    
+    def index_logged_in(self, user_id) -> list:
+        # choose random city of users city
+        city = random.choice(Data().get_city_by_user_id(user_id))
+
+        df_reviews = self.data.dict_to_dataframe(self.data.REVIEWS[city],
+                                                    ["business_id", "stars"])
+        
+        # make similarity matrix wit mean centered ratings
+        utility_matrix = Data().pivot_stars(city)
+        mean_centered_utility_matrix = utility_matrix.sub(utility_matrix.mean())
+        similarity_matrix = Data().similarity_matrix_cosine(mean_centered_utility_matrix)
+        
+        # make list of businesses that user hasn't rated yet
+        not_rated = [review['business_id'] for review in self.data.REVIEWS[city] if review['user_id'] != user_id]
+
+        for business_id in not_rated:
+            neighborhood = self.neighborhood(similarity_matrix, mean_centered_utility_matrix, user_id, business_id)
+            try:
+                df_reviews['predicted rating'] = sum(mean_centered_utility_matrix[user_id].mul(neighborhood).dropna()) / sum(neighborhood.dropna())
+            except:
+                df_reviews['predicted rating'] = None
+            print(df_reviews)
+    
+    def neighborhood(self, similarity_matrix: pd.DataFrame, utility_matrix: pd.DataFrame, user_id: str, new_business: str) -> pd.Series:
+        """
+        Returns Series with business IDs as index and similarity with given business as value
+        Filters out businesses that user has already rated and businesses with similarity below 0
+        """
+        visited = utility_matrix[user_id].dropna().index
+
+        return similarity_matrix[new_business][(similarity_matrix[new_business] > 0) & (similarity_matrix[new_business].index.isin(visited))]
+
+print(Recommender().index_logged_in('NfU0zDaTMEQ4-X9dbQWd9A'))
