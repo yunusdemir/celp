@@ -41,7 +41,7 @@ class Recommender:
         Create a similarity matrix for categories
 
         :param df_data: DataFrame with at least the columns "business_id" and "categories"
-        :return: similairity matrix based on categories
+        :return: similarity matrix based on categories
         """
 
         df = self.data.extract_categories(df_data)
@@ -57,7 +57,7 @@ class Recommender:
     @staticmethod
     def top_similarity(df: pd.DataFrame, business_id: str, n: int = 10) -> list:
         """
-        Function to get the top n similair businesses
+        Function to get the top n similar businesses
 
         :param df: DataFrame from create_similarity_matrix_categories
         :param business_id: the id of the business to test for similarity
@@ -91,11 +91,11 @@ class Recommender:
 
     def business_page(self, business_id, city) -> list:
         """
-        Function that returns other similair businesses on the business page
+        Function that returns other similar businesses on the business page
 
         :param business_id: id of the business of the page
         :param city: city that the business is in
-        :return: list of all data of similair businesses
+        :return: list of all data of similar businesses
         """
         df = self.data.dict_to_dataframe(self.data.BUSINESSES[city], ["business_id", "categories"])
         sim_matrix = self.create_similarity_matrix_categories(df)
