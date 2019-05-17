@@ -25,15 +25,7 @@ class Recommender:
             }
         """
 
-<<<<<<< HEAD
-        if not city:
-            city = random.choice(self.data.CITIES)
-        
-
-        if not business_id:
-=======
         city = random.choice(self.data.CITIES) if not city else city
->>>>>>> cdcae3b8ba74e9eeb4539091b200dcec97aebbfe
 
         if not business_id:
             return_best = []
@@ -46,17 +38,15 @@ class Recommender:
                 return_best.append(random.choice(best_of_all))
             return return_best
 
-<<<<<<< HEAD
-        if business_id:
-=======
         elif business_id:
->>>>>>> cdcae3b8ba74e9eeb4539091b200dcec97aebbfe
+            df_total = self.data.BUSINESSES[city]
             df = self.data.dict_to_dataframe(self.data.BUSINESSES[city],
                                              ["business_id", "categories"])
             matrix = self.create_similarity_matrix_categories(df)
-            list_recommend = self.top_similarity(matrix, business_id)
-
-            return [self.data.get_business(city, b_id) for b_id in list_recommend]
+            list_recommend = self.top_similarity(matrix, city, business_id)
+            trimmed_list = [item for item in list_recommend if next((business['city'] for business in df_total if business['business_id'] == item), None).lower() == city]
+            print(len(trimmed_list))
+            return [self.data.get_business(city, b_id) for b_id in trimmed_list]
 
     
     def create_similarity_matrix_categories(self, df_data: pd.DataFrame) -> pd.DataFrame:
@@ -78,7 +68,7 @@ class Recommender:
                             columns=df_utility_categories.index)
 
     @staticmethod
-    def top_similarity(df: pd.DataFrame, business_id: str, n: int = 10) -> list:
+    def top_similarity(df: pd.DataFrame, city, business_id: str, n: int = 10) -> list:
         """
         Function to get the top n similair businesses
 
