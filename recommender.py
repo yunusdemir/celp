@@ -138,7 +138,8 @@ class Recommender:
 
         return self.data.similarity_matrix_cosine(mean_centered_utility_matrix)
 
-    def predict_rating(self, user_id: str, city: str, min_rating: int = 4):
+    def predict_rating(self, user_id: str, min_rating: int = 4):
+        city = random.choice(self.data.get_cities_by_user_id(user_id))
         df_reviews = self.data.dict_to_dataframe(self.data.REVIEWS[city],
                                                  ["business_id", "stars"])
 

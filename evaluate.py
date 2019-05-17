@@ -14,13 +14,13 @@ def mse(predicted_ratings):
 
 
 def item_based_filtered(user_id):
-    return rec.predict_rating(user_id, "westlake", 4)
+    return rec.predict_rating(user_id, 4)
 
 
 def mse_item_based():
     for city in rec.data.CITIES:
-        for user in rec.data.USERS[city]:
-            print(mse(item_based_filtered(user["user_id"])))
+        mse_list = [mse(item_based_filtered(user["user_id"])) for user in rec.data.USERS[city]]
+        print(min(mse_list), max(mse_list), sum(mse_list)/len(sum_list))
 
 
 mse_item_based()
