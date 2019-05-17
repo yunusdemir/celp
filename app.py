@@ -58,24 +58,27 @@ def logout():
     return redirect("/")
 
 
-@app.route("/business/<city>/<business_id>")
-def business(city, business_id):
+@app.route("/business/<city>/<id>")
+def business(city, id):
     """Business page, shows the business, reviews and 10 recommendations."""
     # Get current user if logged in
     user = session.get("user")
     user_id = user["user_id"] if user else None
 
     # Get business by city and business_id
-    business_data = data.get_business(city.lower(), business_id)
+    business_data = data.get_business(city.lower(), id)
 
     # Grab reviews
-    reviews = data.get_reviews(city=business_data["city"].lower(), business_id=business_data["business_id"])
+    reviews = data.get_reviews(city=business_data["city"].lower(), business_id=business_data[
+        "business_id"])
 
     # Get 10 recommendations
-    recommendations = recommender.recommend(user_id=user_id, business_id=business_id, city=business_data["city"].lower(), n=10)
+    recommendations = recommender.recommend(user_id=user_id, business_id=id, city=business_data[
+        "city"].lower(), n=10)
 
     # Render
-    return render_template("business.html", business=business_data, recommendations=recommendations, reviews=reviews, user=user)
+    return render_template("business.html", business=business_data,
+                           recommendations=recommendations, reviews=reviews, user=user)
 
 
 @app.route("/static/<path:path>")
