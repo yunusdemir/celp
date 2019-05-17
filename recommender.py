@@ -31,7 +31,7 @@ class Recommender:
             return self.index_not_logged_in()
 
         elif not business_id and user_id:
-            return self.index_logged_in(user_id)
+            return self.index_logged_in(user_id, n)
 
         elif business_id and city:
             return self.business_page(business_id, city)
@@ -128,7 +128,7 @@ class Recommender:
 
         return [self.data.get_business(city, b_id) for b_id in top_sim]
 
-    def index_logged_in(self, user_id) -> list:
+    def index_logged_in(self, user_id, n) -> list:
         # choose random city of users city
         city = random.choice(self.data.get_cities_by_user_id(user_id))
 
@@ -153,7 +153,8 @@ class Recommender:
                     neighbourhood.dropna())
             except ZeroDivisionError:
                 df_reviews.at[index, 'predicted rating'] = np.nan 
-        print(df_reviews)
+        
+        return list(df_reviews['predicted rating'].sort_values(ascending=False))[:100]
 
     @staticmethod
     def neighbourhood(similarity_matrix: pd.DataFrame, utility_matrix: pd.DataFrame, user_id: str,
@@ -168,4 +169,4 @@ class Recommender:
             similarity_matrix[new_business].index.isin(visited))]
 
 
-print(Recommender().index_logged_in('NfU0zDaTMEQ4-X9dbQWd9A'))
+print(Recommender().index_logged_in('NfU0zDaTMEQ4-X9dbQWd9A', 10))
