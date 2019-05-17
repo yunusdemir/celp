@@ -56,7 +56,12 @@ class Recommender:
         return random.sample(self.data.BUSINESSES[city], n)
 
     def create_similarity_matrix_categories(self, df_data: pd.DataFrame) -> pd.DataFrame:
-        """Create a similarity matrix for categories"""
+        """
+        Create a similarity matrix for categories
+
+        :param df_data: DataFrame with at least the columns "business_id" and "categories"
+        :return: similairity matrix based on categories
+        """
 
         df = self.data.extract_categories(df_data)
         df_utility_categories = self.data.pivot_categories(df)
@@ -70,6 +75,14 @@ class Recommender:
 
     @staticmethod
     def top_similarity(df: pd.DataFrame, business_id: str, n: int = 10) -> list:
+        """
+        Function to get the top n similair businesses
+
+        :param df: DataFrame from create_similarity_matrix_categories
+        :param business_id: the id of the business to test for similarity
+        :param n: maximum length of returned list
+        :return: list of business_id's where the similarity is at least 0.25
+        """
         sim_series = df.loc[business_id].drop(business_id)
         sim_list = [item for item in sim_series.index if sim_series[item] >= 0.25]
 
