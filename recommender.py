@@ -35,7 +35,6 @@ class Recommender:
 
         return random.sample(self.data.BUSINESSES[city], n)
 
-
     def create_similarity_matrix_categories(self, df_data: pd.DataFrame) -> pd.DataFrame:
         """
         Create a similarity matrix for categories
@@ -55,19 +54,31 @@ class Recommender:
                             columns=df_utility_categories.index)
 
     @staticmethod
-    def top_similarity(df: pd.DataFrame, business_id: str, n: int = 10) -> list:
+    def top_similarity(df: pd.DataFrame, business_id: str, n: int = 10, min_sim: float = 0.25) -> list:
         """
-        Function to get the top n similar businesses
+        Function to get the top n similar businesses with highest similarities
 
         :param df: DataFrame from create_similarity_matrix_categories
         :param business_id: the id of the business to test for similarity
         :param n: maximum length of returned list
+        :param min_sim: minimum similarity
         :return: list of business_id's where the similarity is at least 0.25
         """
         sim_series = df.loc[business_id].drop(business_id)
-        sim_list = [item for item in sim_series.index if sim_series[item] >= 0.25]
 
-        return random.sample(sim_list, n) if len(sim_list) > n else sim_list
+        similarities = sim_series.unique()
+        similarities = [value for value in similarities if value >= min_sim]
+        similarities = np.sort(similarities)[::-1]
+
+        top_list = list()
+
+        for similarity in similarities:
+            top_list += [item for item in sim_series.index if sim_series[item] >= similarity]
+
+            if len(top_list) >= n:
+                break
+
+        return random.sample(top_list, n) if len(top_list) > n else top_list
 
     def index_not_logged_in(self) -> list:
         """
