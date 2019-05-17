@@ -42,10 +42,11 @@ class Recommender:
                                              ["business_id", "categories"])
             matrix = self.create_similarity_matrix_categories(df)
             list_recommend = self.top_similarity(matrix, city, business_id)
-            trimmed_list = [item for item in list_recommend if next((business['city'] for business in df_total if business['business_id'] == item), None).lower() == city]
+            trimmed_list = [item for item in list_recommend if next(
+                (business['city'] for business in df_total if business['business_id'] == item),
+                None).lower() == city]
             print(len(trimmed_list))
             return [self.data.get_business(city, b_id) for b_id in trimmed_list]
-
 
     def create_similarity_matrix_categories(self, df_data: pd.DataFrame) -> pd.DataFrame:
         """
@@ -66,7 +67,8 @@ class Recommender:
                             columns=df_utility_categories.index)
 
     @staticmethod
-    def top_similarity(df: pd.DataFrame, business_id: str, n: int = 10, min_sim: float = 0.25) -> list:
+    def top_similarity(df: pd.DataFrame, business_id: str, n: int = 10,
+                       min_sim: float = 0.25) -> list:
         """
         Function to get the top n similar businesses with highest similarities
 
@@ -128,32 +130,38 @@ class Recommender:
 
     def index_logged_in(self, user_id) -> list:
         # choose random city of users city
-        city = random.choice(Data().get_city_by_user_id(user_id))
+        city = random.choice(self.data.get_cities_by_user_id(user_id))
 
         df_reviews = self.data.dict_to_dataframe(self.data.REVIEWS[city],
-                                                    ["business_id", "stars"])
+                                                 ["business_id", "stars"])
 
-        # make similarity matrix wit mean centered ratings
+        # create similarity matrix with mean centered ratings
         utility_matrix = Data().pivot_stars(city)
         mean_centered_utility_matrix = utility_matrix.sub(utility_matrix.mean())
         similarity_matrix = Data().similarity_matrix_cosine(mean_centered_utility_matrix)
 
-        # make list of businesses that user hasn't rated yet
-        not_rated = [review['business_id'] for review in self.data.REVIEWS[city] if review['user_id'] != user_id]
+        # create list of businesses that user hasn't rated yet
+        not_rated = [review['business_id'] for review in self.data.REVIEWS[city] if
+                     review['user_id'] != user_id]
 
         for business_id in not_rated:
-            neighborhood = self.neighborhood(similarity_matrix, mean_centered_utility_matrix, user_id, business_id)
+            neighbourhood = self.neighbourhood(similarity_matrix, mean_centered_utility_matrix,
+                                               user_id, business_id)
             try:
-                df_reviews['predicted rating'] = sum(mean_centered_utility_matrix[user_id].mul(neighborhood).dropna()) / sum(neighborhood.dropna())
-            except:
+                df_reviews['predicted rating'] = sum(
+                    mean_centered_utility_matrix[user_id].mul(neighbourhood).dropna()) / sum(
+                    neighbourhood.dropna())
+            except IndexError:
                 df_reviews['predicted rating'] = None
-            print(df_reviews)
 
-    def neighborhood(self, similarity_matrix: pd.DataFrame, utility_matrix: pd.DataFrame, user_id: str, new_business: str) -> pd.Series:
+    @staticmethod
+    def neighbourhood(similarity_matrix: pd.DataFrame, utility_matrix: pd.DataFrame, user_id: str,
+                      new_business: str) -> pd.Series:
         """
         Returns Series with business IDs as index and similarity with given business as value
         Filters out businesses that user has already rated and businesses with similarity below 0
         """
         visited = utility_matrix[user_id].dropna().index
 
-        return similarity_matrix[new_business][(similarity_matrix[new_business] > 0) & (similarity_matrix[new_business].index.isin(visited))]
+        return similarity_matrix[new_business][(similarity_matrix[new_business] > 0) & (
+            similarity_matrix[new_business].index.isin(visited))]

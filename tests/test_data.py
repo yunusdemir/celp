@@ -83,9 +83,9 @@ def test_pivot_stars_duplicate_data():
 
 
 def test_get_city_by_user_id():
-    assert data.get_city_by_user_id("CeA_KfaDZq1huASNRe_MAg"), ['faketown', 'mocktown']
-    assert data.get_city_by_user_id("Vsp7ncZY-sm1gzkyNcld_A"), ['mocktown']
-    assert data.get_city_by_user_id("8KeHUYvc5HVzex6XhP6Fug"), ['faketown']
+    assert data.get_cities_by_user_id("CeA_KfaDZq1huASNRe_MAg"), ['faketown', 'mocktown']
+    assert data.get_cities_by_user_id("Vsp7ncZY-sm1gzkyNcld_A"), ['mocktown']
+    assert data.get_cities_by_user_id("8KeHUYvc5HVzex6XhP6Fug"), ['faketown']
 
 
 def test_get_friends_by_user_id():

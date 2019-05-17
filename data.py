@@ -197,7 +197,7 @@ class Data:
         return pd.DataFrame(pw.cosine_similarity(mc_matrix.fillna(0)), index=utility_matrix.index,
                             columns=utility_matrix.index)
 
-    def get_city_by_user_id(self, user_id) -> list:
+    def get_cities_by_user_id(self, user_id) -> list:
         """
         Returns list of cities where user can be found
         """
@@ -209,7 +209,7 @@ class Data:
         """
         Returns list of friends IDs of given user
         """
-        city = self.get_city_by_user_id(user_id)[0]
+        city = self.get_cities_by_user_id(user_id)[0]
         return next((user['elite'] for user in self.USERS[city] if user['user_id'] == user_id),
                     None).split(", ")
         
