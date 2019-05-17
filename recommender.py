@@ -128,33 +128,64 @@ class Recommender:
 
         return [self.data.get_business(city, b_id) for b_id in top_sim]
 
-    def index_logged_in(self, user_id, n) -> list:
-        # choose random city of users city
-        city = random.choice(self.data.get_cities_by_user_id(user_id))
+    def mean_centered(self, utility_matrix: pd.DataFrame) -> pd.DataFrame:
+        """
 
+        :param utility_matrix:
+        :return:
+        """
+        mean_centered_utility_matrix = utility_matrix.sub(utility_matrix.mean())
+
+        return self.data.similarity_matrix_cosine(mean_centered_utility_matrix)
+
+    def predict_rating(self, user_id: str, city: str):
         df_reviews = self.data.dict_to_dataframe(self.data.REVIEWS[city],
                                                  ["business_id", "stars"])
 
         # create similarity matrix with mean centered ratings
         utility_matrix = self.data.pivot_stars(city)
-        mean_centered_utility_matrix = utility_matrix.sub(utility_matrix.mean())
-        similarity_matrix = self.data.similarity_matrix_cosine(mean_centered_utility_matrix)
+        adj_sim_matrix = self.mean_centered(utility_matrix)
 
         # create list of businesses that user hasn't rated yet
         not_rated = [review['business_id'] for review in self.data.REVIEWS[city] if
                      review['user_id'] != user_id]
 
         for index, business_id in enumerate(not_rated):
-            neighbourhood = self.neighbourhood(similarity_matrix, utility_matrix,
+            neighbourhood = self.neighbourhood(adj_sim_matrix, utility_matrix,
                                                user_id, business_id)
             try:
                 df_reviews.at[index, 'predicted rating'] = sum(
                     utility_matrix[user_id].mul(neighbourhood).dropna()) / sum(
                     neighbourhood.dropna())
             except ZeroDivisionError:
-                df_reviews.at[index, 'predicted rating'] = np.nan 
-        
-        return list(df_reviews['predicted rating'].sort_values(ascending=False))[:100]
+                df_reviews.at[index, 'predicted rating'] = np.nan
+
+        return df_reviews
+
+    def index_logged_in(self, user_id, n) -> list:
+        # choose random city of users city
+        city = random.choice(self.data.get_cities_by_user_id(user_id))
+        pred_rating = self.predict_rating(user_id, city).dropna().sort_values(by=["predicted "
+                                                                                  "rating"],
+                                                                              ascending=False)
+
+        return pred_rating[:n]
+
+        # sim_series = df.loc[business_id].drop(business_id)
+        #
+        # similarities = sim_series.unique()
+        # similarities = [value for value in similarities if value >= min_sim]
+        # similarities = np.sort(similarities)[::-1]
+        #
+        # top_list = list()
+        #
+        # for similarity in similarities:
+        #     top_list += [item for item in sim_series.index if sim_series[item] >= similarity]
+        #
+        #     if len(top_list) >= n:
+        #         break
+        #
+        # return random.sample(top_list, n) if len(top_list) > n else top_list
 
     @staticmethod
     def neighbourhood(similarity_matrix: pd.DataFrame, utility_matrix: pd.DataFrame, user_id: str,
