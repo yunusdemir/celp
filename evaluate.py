@@ -9,7 +9,7 @@ def mse(predicted_ratings):
     Arguments:
     predicted_ratings -- a dataFrame containing the columns rating and predicted rating
     """
-    diff = predicted_ratings['rating'] - predicted_ratings['predicted rating']
+    diff = predicted_ratings['stars'] - predicted_ratings['predicted stars']
     return (diff ** 2).mean()
 
 

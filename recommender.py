@@ -154,11 +154,11 @@ class Recommender:
             neighbourhood = self.neighbourhood(adj_sim_matrix, utility_matrix,
                                                user_id, business_id)
             try:
-                df_reviews.at[index, 'predicted rating'] = sum(
+                df_reviews.at[index, 'predicted stars'] = sum(
                     utility_matrix[user_id].mul(neighbourhood).dropna()) / sum(
                     neighbourhood.dropna())
             except ZeroDivisionError:
-                df_reviews.at[index, 'predicted rating'] = np.nan
+                df_reviews.at[index, 'predicted stars'] = np.nan
 
         return df_reviews
 
@@ -166,26 +166,10 @@ class Recommender:
         # choose random city of users city
         city = random.choice(self.data.get_cities_by_user_id(user_id))
         pred_rating = self.predict_rating(user_id, city).dropna().sort_values(by=["predicted "
-                                                                                  "rating"],
+                                                                                  "stars"],
                                                                               ascending=False)
 
         return pred_rating[:n]
-
-        # sim_series = df.loc[business_id].drop(business_id)
-        #
-        # similarities = sim_series.unique()
-        # similarities = [value for value in similarities if value >= min_sim]
-        # similarities = np.sort(similarities)[::-1]
-        #
-        # top_list = list()
-        #
-        # for similarity in similarities:
-        #     top_list += [item for item in sim_series.index if sim_series[item] >= similarity]
-        #
-        #     if len(top_list) >= n:
-        #         break
-        #
-        # return random.sample(top_list, n) if len(top_list) > n else top_list
 
     @staticmethod
     def neighbourhood(similarity_matrix: pd.DataFrame, utility_matrix: pd.DataFrame, user_id: str,
@@ -198,6 +182,3 @@ class Recommender:
 
         return similarity_matrix[new_business][(similarity_matrix[new_business] > 0) & (
             similarity_matrix[new_business].index.isin(visited))]
-
-
-print(Recommender().index_logged_in('NfU0zDaTMEQ4-X9dbQWd9A', 10))
