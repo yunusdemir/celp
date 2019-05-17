@@ -38,6 +38,27 @@ class Recommender:
                 return_best.append(random.choice(best_of_all))
             return return_best
 
+            if user_id:
+                print('USER')
+                # choose random city of users city
+                city = random.choice(Data().get_city_by_user_id(user_id))
+
+                df_reviews = self.data.dict_to_dataframe(self.data.REVIEWS[city],
+                                                         ["business_id", "stars"])
+                
+                # make similarity matrix wit mean centered ratings
+                utility_matrix = Data().pivot_stars(city)
+                mean_centered_utility_matrix = utility_matrix.sub(utility_matrix.mean())
+                similarity_matrix = Data().similarity_matrix_cosine(mean_centered_utility_matrix)
+                
+                # make list of businesses that user hasn't rated yet
+                not_rated = [review['business_id'] for review in self.data.REVIEWS[city] if review['user_id'] != user_id]
+
+                for business_id in not_rated:
+                    neighborhood = self.neighborhood(similarity_matrix, mean_centered_utility_matrix, user_id, business_id)
+                    df_reviews['predicted rating'] = sum(mean_centered_utility_matrix[user_id].mul(neighborhood).dropna()) / sum(neighborhood.dropna())
+                print(df_reviews)
+
         elif business_id:
             df = self.data.dict_to_dataframe(self.data.BUSINESSES[city],
                                              ["business_id", "categories"])
@@ -52,7 +73,7 @@ class Recommender:
         Create a similarity matrix for categories
 
         :param df_data: DataFrame with at least the columns "business_id" and "categories"
-        :return: similairity matrix based on categories
+        :return: similarity matrix based on categories
         """
 
         df = self.data.extract_categories(df_data)
@@ -64,7 +85,7 @@ class Recommender:
         m3 = np.minimum(m2, m2.T)
         return pd.DataFrame(m3, index=df_utility_categories.index,
                             columns=df_utility_categories.index)
-
+    
     @staticmethod
     def top_similarity(df: pd.DataFrame, business_id: str, n: int = 10) -> list:
         """
@@ -79,3 +100,12 @@ class Recommender:
         sim_list = [item for item in sim_series.index if sim_series[item] >= 0.25]
 
         return random.sample(sim_list, n) if len(sim_list) > n else sim_list
+
+    def neighborhood(self, similarity_matrix: pd.DataFrame, utility_matrix: pd.DataFrame, user_id: str, new_business: str) -> pd.Series:
+        """
+        Returns Series with business IDs as index and similarity with given business as value
+        Filters out businesses that user has already rated and businesses with similarity below 0
+        """
+        visited = utility_matrix[user_id].dropna().index
+
+        return similarity_matrix[new_business][(similarity_matrix[new_business] > 0) & (similarity_matrix[new_business].index.isin(visited))]
