@@ -25,12 +25,9 @@ class Recommender:
             }
         """
 
-        if not city:
-            city = random.choice(self.data.CITIES)
-        
+        city = random.choice(self.data.CITIES) if not city else city
 
         if not business_id:
-
             return_best = []
             for _ in range(9):
                 city = random.choice(self.data.CITIES)
@@ -41,7 +38,7 @@ class Recommender:
                 return_best.append(random.choice(best_of_all))
             return return_best
 
-        if business_id:
+        elif business_id:
             df = self.data.dict_to_dataframe(self.data.BUSINESSES[city],
                                              ["business_id", "categories"])
             matrix = self.create_similarity_matrix_categories(df)
@@ -49,12 +46,16 @@ class Recommender:
 
             return [self.data.get_business(city, b_id) for b_id in list_recommend]
 
-    def create_similarity_matrix_categories(self, df_categories: pd.DataFrame) -> pd.DataFrame:
+    
+    def create_similarity_matrix_categories(self, df_data: pd.DataFrame) -> pd.DataFrame:
         """
         Create a similarity matrix for categories
+
+        :param df_data: DataFrame with at least the columns "business_id" and "categories"
+        :return: similairity matrix based on categories
         """
 
-        df = self.data.extract_categories(df_categories)
+        df = self.data.extract_categories(df_data)
         df_utility_categories = self.data.pivot_categories(df)
 
         npu = df_utility_categories.values
@@ -67,14 +68,14 @@ class Recommender:
     @staticmethod
     def top_similarity(df: pd.DataFrame, business_id: str, n: int = 10) -> list:
         """
-        Returns list with business ID's of n businesses with highest similarity 
-        """
-        sim_series = df.loc[business_id]
-        sim_series = sim_series.sort_values(ascending=False).drop(business_id)
+        Function to get the top n similair businesses
 
+        :param df: DataFrame from create_similarity_matrix_categories
+        :param business_id: the id of the business to test for similarity
+        :param n: maximum length of returned list
+        :return: list of business_id's where the similarity is at least 0.25
+        """
+        sim_series = df.loc[business_id].drop(business_id)
         sim_list = [item for item in sim_series.index if sim_series[item] >= 0.25]
 
-        if len(sim_list) > n:
-            sim_list = random.sample(sim_list, n)
-
-        return sim_list
+        return random.sample(sim_list, n) if len(sim_list) > n else sim_list
