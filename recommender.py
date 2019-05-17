@@ -49,10 +49,7 @@ class Recommender:
             matrix = self.create_similarity_matrix_categories(df)
             list_recommend = self.top_similarity(matrix, business_id)
 
-            return_list = list()
-
-            for b_id in list_recommend:
-                return_list.append(self.data.get_business(city, b_id))
+            return_list = [self.data.get_business(city, b_id) for b_id in list_recommend]
 
             return return_list
 
@@ -73,12 +70,7 @@ class Recommender:
 
     @staticmethod
     def top_similarity(df: pd.DataFrame, business_id: str, n: int = 10) -> list:
-        sim_series = df.loc[business_id]
-        sim_series = sim_series.sort_values(ascending=False).drop(business_id)
-
+        sim_series = df.loc[business_id].drop(business_id)
         sim_list = [item for item in sim_series.index if sim_series[item] >= 0.25]
 
-        if len(sim_list) > n:
-            sim_list = random.sample(sim_list, n)
-
-        return sim_list
+        return random.sample(sim_list, n) if len(sim_list) > n else sim_list
