@@ -29,7 +29,7 @@ class Recommender:
             city = random.choice(self.data.CITIES)
         
 
-        if business_id is None:
+        if not business_id:
 
             return_best = []
             for _ in range(9):
@@ -45,7 +45,7 @@ class Recommender:
                 return_best.append(random.choice(best_of_all))
             return return_best
 
-        if business_id is not None:
+        if business_id:
             df = self.data.dict_to_dataframe(self.data.BUSINESSES[city],
                                              ["business_id", "categories"])
             matrix = self.create_similarity_matrix_categories(df)
