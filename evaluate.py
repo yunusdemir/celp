@@ -13,12 +13,14 @@ def mse(predicted_ratings):
     return (diff ** 2).mean()
 
 
-def item_based_filtered():
-    return rec.predict_rating("Vsp7ncZY-sm1gzkyNcld_A", "westlake")
+def item_based_filtered(user_id):
+    return rec.predict_rating(user_id, "westlake", 4)
 
 
 def mse_item_based():
-    return mse(item_based_filtered())
+    for city in rec.data.CITIES:
+        for user in rec.data.USERS[city]:
+            print(mse(item_based_filtered(user["user_id"])))
 
 
-print(mse_item_based())
+mse_item_based()

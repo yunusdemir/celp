@@ -138,9 +138,11 @@ class Recommender:
 
         return self.data.similarity_matrix_cosine(mean_centered_utility_matrix)
 
-    def predict_rating(self, user_id: str, city: str):
+    def predict_rating(self, user_id: str, city: str, min_rating: int = 4):
         df_reviews = self.data.dict_to_dataframe(self.data.REVIEWS[city],
                                                  ["business_id", "stars"])
+
+        df_reviews = df_reviews[df_reviews["stars"] >= min_rating]
 
         # create similarity matrix with mean centered ratings
         utility_matrix = self.data.pivot_stars(city)
