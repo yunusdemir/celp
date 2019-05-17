@@ -28,30 +28,10 @@ class Recommender:
         city = random.choice(self.data.CITIES) if not city else city
 
         if business_id is None:
-            return_best = list()
+            return self.index_not_logged_in()
 
-            for _ in range(9):
-                best_of_all = list()
-
-                city = random.choice(self.data.CITIES)
-                all_data = self.data.BUSINESSES[city]
-
-                for item in all_data:
-                    if item['stars'] >= 4 and item['review_count'] >= 15:
-                        best_of_all.append(item)
-
-                return_best.append(random.choice(best_of_all))
-            return return_best
-
-        elif business_id is not None:
-            df = self.data.dict_to_dataframe(self.data.BUSINESSES[city],
-                                             ["business_id", "categories"])
-            matrix = self.create_similarity_matrix_categories(df)
-            list_recommend = self.top_similarity(matrix, business_id)
-
-            return_list = [self.data.get_business(city, b_id) for b_id in list_recommend]
-
-            return return_list
+        elif business_id and city:
+            return self.business_page(business_id, city)
 
         return random.sample(self.data.BUSINESSES[city], n)
 
@@ -87,3 +67,39 @@ class Recommender:
         sim_list = [item for item in sim_series.index if sim_series[item] >= 0.25]
 
         return random.sample(sim_list, n) if len(sim_list) > n else sim_list
+
+    def index_not_logged_in(self) -> list:
+        """
+        Function that returns businesses and data when user visit homepage and is not logged in
+
+        :return: list with all data of businesses
+        """
+
+        return_best = list()
+
+        for _ in range(9):
+            city = random.choice(self.data.CITIES)
+            all_data = self.data.BUSINESSES[city]
+
+            best_of_all = [item for item in all_data if item['stars'] >= 4 and item[
+                'review_count'] >= 15]
+
+            return_best.append(random.choice(best_of_all))
+
+        return return_best
+
+    def business_page(self, business_id, city) -> list:
+        """
+        Function that returns other similair businesses on the business page
+
+        :param business_id: id of the business of the page
+        :param city: city that the business is in
+        :return: list of all data of similair businesses
+        """
+        df = self.data.dict_to_dataframe(self.data.BUSINESSES[city], ["business_id", "categories"])
+        sim_matrix = self.create_similarity_matrix_categories(df)
+        top_sim = self.top_similarity(sim_matrix, business_id)
+
+        return_list = [self.data.get_business(city, b_id) for b_id in top_sim]
+
+        return return_list
