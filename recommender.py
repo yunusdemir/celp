@@ -36,8 +36,17 @@ class Recommender:
         elif business_id and city:
             return self.business_page(business_id, city)
 
-        return random.sample(self.data.BUSINESSES[city], n)
+        elif business_id:
+            df_total = self.data.BUSINESSES[city]
+            df = self.data.dict_to_dataframe(self.data.BUSINESSES[city],
+                                             ["business_id", "categories"])
+            matrix = self.create_similarity_matrix_categories(df)
+            list_recommend = self.top_similarity(matrix, city, business_id)
+            trimmed_list = [item for item in list_recommend if next((business['city'] for business in df_total if business['business_id'] == item), None).lower() == city]
+            print(len(trimmed_list))
+            return [self.data.get_business(city, b_id) for b_id in trimmed_list]
 
+    
     def create_similarity_matrix_categories(self, df_data: pd.DataFrame) -> pd.DataFrame:
         """
         Create a similarity matrix for categories
