@@ -35,6 +35,7 @@ class Recommender:
 
         return random.sample(self.data.BUSINESSES[city], n)
 
+
     def create_similarity_matrix_categories(self, df_data: pd.DataFrame) -> pd.DataFrame:
         """
         Create a similarity matrix for categories
