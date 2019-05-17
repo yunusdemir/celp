@@ -27,47 +27,14 @@ class Recommender:
 
         city = random.choice(self.data.CITIES) if not city else city
 
-        if not business_id:
-            return_best = []
-            for _ in range(9):
-                city = random.choice(self.data.CITIES)
-                all_data = self.data.BUSINESSES[city]
-                
-                best_of_all = [item for item in all_data if item['stars'] >= 4 and item['review_count'] >= 15]
+        if business_id is None:
+            return self.index_not_logged_in()
 
-                return_best.append(random.choice(best_of_all))
-            return return_best
+        elif business_id and city:
+            return self.business_page(business_id, city)
 
-            if user_id:
-                print('USER')
-                # choose random city of users city
-                city = random.choice(Data().get_city_by_user_id(user_id))
+        return random.sample(self.data.BUSINESSES[city], n)
 
-                df_reviews = self.data.dict_to_dataframe(self.data.REVIEWS[city],
-                                                         ["business_id", "stars"])
-                
-                # make similarity matrix wit mean centered ratings
-                utility_matrix = Data().pivot_stars(city)
-                mean_centered_utility_matrix = utility_matrix.sub(utility_matrix.mean())
-                similarity_matrix = Data().similarity_matrix_cosine(mean_centered_utility_matrix)
-                
-                # make list of businesses that user hasn't rated yet
-                not_rated = [review['business_id'] for review in self.data.REVIEWS[city] if review['user_id'] != user_id]
-
-                for business_id in not_rated:
-                    neighborhood = self.neighborhood(similarity_matrix, mean_centered_utility_matrix, user_id, business_id)
-                    df_reviews['predicted rating'] = sum(mean_centered_utility_matrix[user_id].mul(neighborhood).dropna()) / sum(neighborhood.dropna())
-                print(df_reviews)
-
-        elif business_id:
-            df = self.data.dict_to_dataframe(self.data.BUSINESSES[city],
-                                             ["business_id", "categories"])
-            matrix = self.create_similarity_matrix_categories(df)
-            list_recommend = self.top_similarity(matrix, business_id)
-
-            return [self.data.get_business(city, b_id) for b_id in list_recommend]
-
-    
     def create_similarity_matrix_categories(self, df_data: pd.DataFrame) -> pd.DataFrame:
         """
         Create a similarity matrix for categories
@@ -87,25 +54,64 @@ class Recommender:
                             columns=df_utility_categories.index)
     
     @staticmethod
-    def top_similarity(df: pd.DataFrame, business_id: str, n: int = 10) -> list:
+    def top_similarity(df: pd.DataFrame, business_id: str, n: int = 10, min_sim: float = 0.25) -> list:
         """
-        Function to get the top n similair businesses
+        Function to get the top n similar businesses with highest similarities
 
         :param df: DataFrame from create_similarity_matrix_categories
         :param business_id: the id of the business to test for similarity
         :param n: maximum length of returned list
+        :param min_sim: minimum similarity
         :return: list of business_id's where the similarity is at least 0.25
         """
         sim_series = df.loc[business_id].drop(business_id)
-        sim_list = [item for item in sim_series.index if sim_series[item] >= 0.25]
 
-        return random.sample(sim_list, n) if len(sim_list) > n else sim_list
+        similarities = sim_series.unique()
+        similarities = [value for value in similarities if value >= min_sim]
+        similarities = np.sort(similarities)[::-1]
 
-    def neighborhood(self, similarity_matrix: pd.DataFrame, utility_matrix: pd.DataFrame, user_id: str, new_business: str) -> pd.Series:
+        top_list = list()
+
+        for similarity in similarities:
+            top_list += [item for item in sim_series.index if sim_series[item] >= similarity]
+
+            if len(top_list) >= n:
+                break
+
+        return random.sample(top_list, n) if len(top_list) > n else top_list
+
+    def index_not_logged_in(self) -> list:
         """
-        Returns Series with business IDs as index and similarity with given business as value
-        Filters out businesses that user has already rated and businesses with similarity below 0
-        """
-        visited = utility_matrix[user_id].dropna().index
+        Function that returns businesses and data when user visit homepage and is not logged in
 
-        return similarity_matrix[new_business][(similarity_matrix[new_business] > 0) & (similarity_matrix[new_business].index.isin(visited))]
+        :return: list with all data of businesses
+        """
+
+        return_best = list()
+
+        for _ in range(9):
+            city = random.choice(self.data.CITIES)
+            all_data = self.data.BUSINESSES[city]
+
+            best_of_all = [item for item in all_data if item['stars'] >= 4 and item[
+                'review_count'] >= 15]
+
+            return_best.append(random.choice(best_of_all))
+
+        return return_best
+
+    def business_page(self, business_id, city) -> list:
+        """
+        Function that returns other similar businesses on the business page
+
+        :param business_id: id of the business of the page
+        :param city: city that the business is in
+        :return: list of all data of similar businesses
+        """
+        df = self.data.dict_to_dataframe(self.data.BUSINESSES[city], ["business_id", "categories"])
+        sim_matrix = self.create_similarity_matrix_categories(df)
+        top_sim = self.top_similarity(sim_matrix, business_id)
+
+        return_list = [self.data.get_business(city, b_id) for b_id in top_sim]
+
+        return return_list
