@@ -38,7 +38,7 @@ class Recommender:
 
         elif business_id:
             df_total = self.data.BUSINESSES[city]
-            df = self.data.dict_to_dataframe(self.data.BUSINESSES[city],
+            df = self.data.dict_to_dataframe(self.data.BUSINESSES, city
                                              ["business_id", "categories"])
             matrix = self.create_similarity_matrix_categories(df)
             list_recommend = self.top_similarity(matrix, city, business_id)
@@ -122,7 +122,7 @@ class Recommender:
         :param city: city that the business is in
         :return: list of all data of similar businesses
         """
-        df = self.data.dict_to_dataframe(self.data.BUSINESSES[city], ["business_id", "categories"])
+        df = self.data.dict_to_dataframe(self.data.BUSINESSES, city, ["business_id", "categories"])
         sim_matrix = self.create_similarity_matrix_categories(df)
         top_sim = self.top_similarity(sim_matrix, business_id)
 
@@ -140,7 +140,7 @@ class Recommender:
 
     def predict_rating(self, user_id: str, min_rating: int = 4):
         city = random.choice(self.data.get_cities_by_user_id(user_id))
-        df_reviews = self.data.dict_to_dataframe(self.data.REVIEWS[city],
+        df_reviews = self.data.dict_to_dataframe(self.data.REVIEWS, city,
                                                  ["business_id", "stars"])
 
         df_reviews = df_reviews[df_reviews["stars"] >= min_rating]
