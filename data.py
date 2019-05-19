@@ -142,11 +142,11 @@ class Data:
         cities = self.CITIES if cities is None else cities
 
         for city in cities:
-            cities_dict[city] = func(*tuple(value for _, value in kwargs.items()))
+            cities_dict[city] = func(*tuple(value for _, value in kwargs.items()), city)
 
         return cities_dict
 
-    def dict_to_dataframe(self, data: dict, columns: list = None) -> pd.DataFrame:
+    def dict_to_dataframe(self, data: dict, city: str, columns: list = None) -> pd.DataFrame:
         """
         Converts a given json file into a DataFrame,
         Only converts given columns if columns are given else convert all
@@ -161,8 +161,7 @@ class Data:
         # create empty DataFrame with right columns for every city
         df_dict = pd.DataFrame(columns=columns)
 
-        for data_dict in data:
-            # filter json-data on given columns and append filtered dict to DataFrame
+        for data_dict in data[city]:
             filtered_dict = {wanted: data_dict[wanted] for wanted in columns}
             df_dict = df_dict.append(filtered_dict, ignore_index=True)
 
