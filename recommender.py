@@ -1,4 +1,5 @@
 import random
+from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
@@ -139,40 +140,38 @@ class Recommender:
         return self.data.similarity_matrix_cosine(mean_centered_utility_matrix)
 
     def predict_rating(self, user_id: str, min_rating: int = 4):
+        """
+        Predicts rating for every for given user
+
+        """
+        
         city = random.choice(self.data.get_cities_by_user_id(user_id))
-        df_reviews = self.data.dict_to_dataframe(self.data.REVIEWS, city,
-                                                 ["business_id", "stars"])
-
-        df_reviews = df_reviews[df_reviews["stars"] >= min_rating]
-
-        # create similarity matrix with mean centered ratings
-        utility_matrix = self.data.pivot_stars(city)
+        
+        utility_matrix = self.data.pivot_stars(self.data.REVIEWS, city)
         adj_sim_matrix = self.mean_centered(utility_matrix)
 
         # create list of businesses that user hasn't rated yet
-        not_rated = [review['business_id'] for review in self.data.REVIEWS[city] if
-                     review['user_id'] != user_id]
-
-        for index, business_id in enumerate(not_rated):
+        not_rated = list(set([business['business_id'] for business in self.data.BUSINESSES[city]]) - set([review['business_id'] for review in self.data.REVIEWS[city] if
+                     review['user_id'] == user_id]))
+        
+        predicted_ratings = {}
+        for business_id in not_rated:
             neighbourhood = self.neighbourhood(adj_sim_matrix, utility_matrix,
                                                user_id, business_id)
+            
             try:
-                df_reviews.at[index, 'predicted stars'] = sum(
+                predicted_ratings[business_id] = sum(
                     utility_matrix[user_id].mul(neighbourhood).dropna()) / sum(
                     neighbourhood.dropna())
             except ZeroDivisionError:
-                df_reviews.at[index, 'predicted stars'] = np.nan
+                predicted_ratings[business_id] = 0
+        
+        return predicted_ratings, city
 
-        return df_reviews
-
-    def index_logged_in(self, user_id, n) -> list:
-        # choose random city of users city
-        city = random.choice(self.data.get_cities_by_user_id(user_id))
-        pred_rating = self.predict_rating(user_id, city).dropna().sort_values(by=["predicted "
-                                                                                  "stars"],
-                                                                              ascending=False)
-
-        return pred_rating[:n]
+    def index_logged_in(self, user_id, n=10) -> list:
+        sorted_dict = OrderedDict(sorted(self.predict_rating(user_id)[0].items(), key=lambda x : x[1], reverse=True))
+        city = self.predict_rating(user_id)[1]
+        return [next((business for business in self.data.BUSINESSES[city] if business['business_id'] == business_id), None) for business_id in list(sorted_dict.keys())[:n]] #pred_rating[:n]
 
     @staticmethod
     def neighbourhood(similarity_matrix: pd.DataFrame, utility_matrix: pd.DataFrame, user_id: str,
