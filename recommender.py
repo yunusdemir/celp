@@ -141,7 +141,7 @@ class Recommender:
 
     def predict_rating(self, user_id: str, min_rating: int = 4):
         """
-        Predicts rating for every for given user
+        Predicts rating for every unrated business for given user
 
         """
         
