@@ -167,16 +167,15 @@ class Data:
 
         return df_dict
 
-    def pivot_stars(self, city: str) -> pd.DataFrame:
+    def pivot_stars(self, data, city) -> pd.DataFrame:
         """
         Create and return utility matrix for the stars in the reviews
         Last review counts, because apparently something made the person update their review.
 
         :return: a dict with cities as keys and the values are utility matrixes of those cities
         """
-
-        df = self.dict_to_dataframe(self.REVIEWS[city], columns=["user_id", "business_id",
-                                                                 "stars", "date"])
+        df = self.dict_to_dataframe(data, city, columns=["user_id", "business_id",
+                                                         "stars", "date"]) if type(data) != pd.DataFrame else data
 
         df = df.sort_values("date").drop_duplicates(subset=["user_id", "business_id"],
                                                     keep="last")
