@@ -1,5 +1,6 @@
 import random
 import numpy as np
+import pandas as pd
 
 from recommender import Recommender
 
@@ -7,53 +8,55 @@ rec = Recommender()
 
 class Evaluate:
     
-    def split_data(self, data, d = 0.5):
-        """ 
-        Split data in a training and test set 
-        'd' is the fraction of data in the training set
+    def mse(self, predicted_ratings) -> int:
         """
-        np.random.seed(seed=5)
-        mask_test = np.random.rand(data.shape[0]) < d
-        return data[mask_test], data[~mask_test]
+        Computes the mean square error between actual ratings and predicted ratings
 
-    def mse(self, predicted_ratings):
-        """Computes the mean square error between actual ratings and predicted ratings
-
-        Arguments:
-        predicted_ratings -- a dataFrame containing the columns rating and predicted rating
+        :param predicted_ratings: DataFrame containing the columns rating and predicted rating
+        :return: int containing mse of given Dataframe
         """
         diff = sum(predicted_ratings['stars'].sub(predicted_ratings['predicted stars']) ** 2)
         return (diff / len(predicted_ratings))
 
 
-    def mse_item_based(self, n):
-        mse_list = []
-        for _ in range(n):
-            city = random.choice(rec.data.CITIES)
-            training, test = self.split_data(rec.data.dict_to_dataframe(rec.data.REVIEWS, city, columns=["user_id", "business_id",
-                                                                                                        "stars", "date"]))
-            
-            utility_matrix = rec.data.pivot_stars(training, city)
-            adj_sim_matrix = rec.mean_centered(utility_matrix)
-            while True:
-                user_id = random.choice(test['user_id'].values)
-                if user_id in training['user_id'].values:
-                    break
-            
-            predicted = test[test['user_id'] == user_id].reset_index()
-            
-            for index, business_id in enumerate(predicted['business_id']):
+    def mse_user(self, user_id, city, df_reviews) -> int:
+        """
+        Predicts ratings for every business already rated by given user 
+        and returns mse of user predictions
 
-                try:
-                    neighbourhood = rec.neighbourhood(adj_sim_matrix, utility_matrix, user_id, business_id)
-
-                    predicted.loc[index, 'predicted stars'] = sum(utility_matrix[user_id].mul(neighbourhood).dropna()) / sum(
-                        neighbourhood.dropna())
-
-                except ZeroDivisionError:
-                    predicted.loc[index, 'predicted stars'] = np.nan
+        :param user_id -- id of user to predict ratings for
+        :param city -- city to get businesses and reviews from, needed for pivot_stars function
+        :param df_reviews -- DataFrame containing all reviews of given city
+        :return: int containing mse
+        """
+        utility_matrix = rec.data.pivot_stars(df_reviews, city)
+        adj_sim_matrix = rec.mean_centered(utility_matrix)
+        
+        reviewed = df_reviews[df_reviews['user_id'] == user_id].reset_index()
+        
+        for index, business_id in enumerate(reviewed['business_id']):
+            neighbourhood = rec.neighbourhood(adj_sim_matrix, utility_matrix, user_id, business_id)
             
-            mse_list.append(self.mse(predicted))
-        return mse_list
+            try:
+                reviewed.loc[index, 'predicted stars'] = sum(utility_matrix[user_id].mul(neighbourhood).dropna()) / sum(
+                    neighbourhood.dropna())
+                
+            except ZeroDivisionError:
+                reviewed.loc[index, 'predicted stars'] = np.nan
+        return self.mse(reviewed)
 
-print(Evaluate().mse_item_based(10))
+    def mse_city_item(self) -> dict:
+        """
+        Calculates mse of every city and returns mse as value with city as key
+
+        :return: dict with cities as keys and mse's as values
+        """
+        mse_dict = {}
+
+        for city in rec.data.CITIES:
+            df_reviews = rec.data.dict_to_dataframe(rec.data.REVIEWS, city, columns=['user_id', 'business_id', 'stars', 'date'])
+            mse_list = pd.Series([self.mse_user(user_id, city, df_reviews) for user_id in df_reviews['user_id'].values]).dropna()
+            mse_dict[city] = sum(mse_list) / len(mse_list)
+        return mse_dict
+
+print(Evaluate().mse_city_item())        
