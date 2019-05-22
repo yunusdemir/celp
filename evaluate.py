@@ -59,15 +59,6 @@ class Evaluate:
             mse_dict[city] = sum(mse_list) / len(mse_list)
         return mse_dict
 
-    def mse_mean(self) -> dict:
-        mse_dict = {}
-
-        for city in rec.data.CITIES:
-            df_reviews = rec.data.dict_to_dataframe(rec.data.REVIEWS, city, columns=['user_id', 'business_id', 'stars', 'date'])
-            df_reviews['predicted stars'] = df_reviews['stars'].mean()
-            mse_dict[city] = self.mse(df_reviews)
-        return mse_dict
-
     def mse_content_based(self) -> dict:
         mse_dict = {}
 
@@ -80,4 +71,23 @@ class Evaluate:
             mse_dict[city] = sum(mse_list) / len(mse_list)
         return mse_dict
 
-print(Evaluate().mse_content_based())        
+    def mse_mean(self) -> dict:
+        mse_dict = {}
+
+        for city in rec.data.CITIES:
+            df_reviews = rec.data.dict_to_dataframe(rec.data.REVIEWS, city, columns=['user_id', 'business_id', 'stars', 'date'])
+            df_reviews['predicted stars'] = df_reviews['stars'].mean()
+            mse_dict[city] = self.mse(df_reviews)
+        return mse_dict
+
+    def mse_random(self) -> dict:
+        mse_dict = {}
+
+        for city in rec.data.CITIES:
+            df_reviews = rec.data.dict_to_dataframe(rec.data.REVIEWS, city, columns=['user_id', 'business_id', 'stars', 'date'])
+            for index in df_reviews.index:
+                df_reviews.loc[index, 'predicted stars'] = np.random.uniform(0.5, 5.0)
+            
+            mse_dict[city] = self.mse(df_reviews)
+        return mse_dict
+print(Evaluate().mse_random())     
